@@ -1,0 +1,4340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyGuide India | Premium Travel Assistant</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary:#000080;
+            --bg:#fff;
+            --text:#1E293B;
+            --muted:#64748b;
+        }
+
+        * {
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Poppins',sans-serif;
+        }
+
+        body {
+            background:var(--bg);
+            overflow-x:hidden;
+            color:var(--text);
+        }
+
+        nav {
+            position:fixed;
+            top:0;
+            width:100%;
+            padding:1.5rem 8%;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            background:rgba(255,255,255,.92);
+            backdrop-filter:blur(15px);
+            z-index:1000;
+            border-bottom:1px solid #f1f5f9;
+        }
+
+        .logo {
+            font-size:1.8rem;
+            font-weight:700;
+            color:var(--primary);
+        }
+
+        .btn-navy {
+            background:var(--primary);
+            color:white;
+            padding:12px 30px;
+            border-radius:50px;
+            border:none;
+            cursor:pointer;
+            font-weight:600;
+            transition:.3s;
+        }
+
+        .btn-navy:hover {
+            transform:translateY(-2px);
+            opacity:.92;
+        }
+
+        .location-section {
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            position:relative;
+            overflow:hidden;
+            background:white;
+        }
+
+        .location-section:nth-child(even) {
+            flex-direction:row-reverse;
+        }
+
+        .content-box {
+            flex:1;
+            padding:0 8%;
+            opacity:0;
+            transform:translateX(-50px);
+            transition:1.2s all ease;
+            z-index:10;
+        }
+
+        .image-box {
+            flex:1.5;
+            height:100vh;
+            opacity:0;
+            transform:translateX(50px);
+            transition:1.2s all ease;
+            background:#f8fafc;
+        }
+
+        .image-box img {
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            -webkit-mask-image:linear-gradient(
+                to left,
+                rgba(0,0,0,1) 75%,
+                rgba(0,0,0,0) 100%
+            );
+            mask-image:linear-gradient(
+                to left,
+                rgba(0,0,0,1) 75%,
+                rgba(0,0,0,0) 100%
+            );
+        }
+
+        .location-section:nth-child(even) .image-box img {
+            -webkit-mask-image:linear-gradient(
+                to right,
+                rgba(0,0,0,1) 75%,
+                rgba(0,0,0,0) 100%
+            );
+            mask-image:linear-gradient(
+                to right,
+                rgba(0,0,0,1) 75%,
+                rgba(0,0,0,0) 100%
+            );
+        }
+
+        .location-section.active .content-box,
+        .location-section.active .image-box {
+            opacity:1;
+            transform:translateX(0);
+        }
+
+        .content-box h2 {
+            font-size:5rem;
+            letter-spacing:-4px;
+            line-height:1;
+            margin:10px 0;
+        }
+
+        .content-box p {
+            font-size:1.2rem;
+            color:var(--muted);
+            line-height:1.8;
+            margin-bottom:30px;
+        }
+
+        .sidebar {
+            position:fixed;
+            top:0;
+            left:-380px;
+            width:350px;
+            height:100vh;
+            background:white;
+            z-index:2000;
+            box-shadow:10px 0 50px rgba(0,0,0,.1);
+            transition:.5s;
+            padding:4rem 2rem;
+            display:flex;
+            flex-direction:column;
+        }
+
+        .sidebar.open {
+            left:0;
+        }
+
+        .nav-item {
+            padding:15px;
+            border-radius:12px;
+            cursor:pointer;
+            margin-bottom:8px;
+            font-weight:500;
+            transition:.3s;
+        }
+
+        .nav-item:hover {
+            background:#F1F5F9;
+            color:var(--primary);
+        }
+
+        .overlay {
+            position:fixed;
+            inset:0;
+            background:#FDFCFB;
+            z-index:5000;
+            display:none;
+            overflow-y:auto;
+            padding:5rem 8%;
+        }
+
+        .overlay.active {
+            display:block;
+        }
+
+        .card {
+            background:white;
+            border-radius:24px;
+            padding:2rem;
+            margin-bottom:1.5rem;
+            box-shadow:0 10px 30px rgba(0,0,0,.05);
+            border:1px solid #eee;
+        }
+
+        #auth-layer {
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,.4);
+            backdrop-filter:blur(10px);
+            z-index:9000;
+            display:none;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .auth-card {
+            background:white;
+            padding:3rem;
+            border-radius:30px;
+            width:420px;
+            max-width:92vw;
+            text-align:center;
+            position:relative;
+        }
+
+        .close-auth {
+            position:absolute;
+            top:12px;
+            right:16px;
+            width:36px;
+            height:36px;
+            border:0;
+            background:transparent;
+            color:#64748b;
+            font-size:30px;
+            line-height:36px;
+            cursor:pointer;
+            border-radius:50%;
+        }
+
+        .close-auth:hover {
+            background:#f1f5f9;
+            color:#111827;
+        }
+
+        .auth-card input {
+            width:100%;
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:12px;
+            margin-bottom:12px;
+        }
+
+        .auth-error {
+            color:#ef4444;
+            font-size:.85rem;
+            margin-top:-4px;
+            margin-bottom:12px;
+            min-height:1em;
+        }
+
+        .auth-success {
+            color:#16a34a;
+            font-size:.85rem;
+            margin-top:-4px;
+            margin-bottom:12px;
+            min-height:1em;
+        }
+
+        .hidden {
+            display:none !important;
+        }
+
+        .select {
+            width:100%;
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:12px;
+            background:white;
+        }
+
+        .hotel-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:18px;
+            margin-top:22px;
+        }
+
+        .hotel-card {
+            background:white;
+            border:1px solid #e5e7eb;
+            border-radius:20px;
+            padding:20px;
+            box-shadow:0 8px 24px rgba(0,0,0,.04);
+        }
+
+        .hotel-price {
+            color:var(--primary);
+            font-size:1.3rem;
+            font-weight:700;
+            margin:10px 0;
+        }
+
+        .badge {
+            display:inline-block;
+            background:#eef2ff;
+            color:var(--primary);
+            padding:5px 10px;
+            border-radius:20px;
+            font-size:.75rem;
+            font-weight:600;
+        }
+
+        .features {
+            color:#64748b;
+            font-size:.82rem;
+            line-height:1.6;
+            margin-top:10px;
+        }
+
+        .filters {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:15px;
+        }
+
+        .budget-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+            gap:15px;
+            margin-top:20px;
+        }
+
+        .metric {
+            padding:18px;
+            border-radius:18px;
+            background:#f8fafc;
+        }
+
+        .metric strong {
+            display:block;
+            font-size:1.25rem;
+            margin-top:5px;
+        }
+
+        /* ================= CHAT HISTORY ================= */
+
+        .history-head {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:10px;
+        }
+
+        .clear-all {
+            border:0;
+            background:transparent;
+            color:#94a3b8;
+            font-size:.72rem;
+            cursor:pointer;
+            padding:4px 6px;
+            border-radius:6px;
+        }
+
+        .clear-all:hover {
+            background:#fee2e2;
+            color:#ef4444;
+        }
+
+        .chat-item {
+            position:relative;
+            display:flex;
+            align-items:flex-start;
+            gap:10px;
+            padding:10px 34px 10px 10px;
+            border-radius:12px;
+            cursor:pointer;
+            margin-bottom:6px;
+            transition:.2s;
+            border:1px solid transparent;
+        }
+
+        .chat-item:hover {
+            background:#f8fafc;
+            border-color:#e2e8f0;
+        }
+
+        .chat-item.active {
+            background:#eef2ff;
+            border-color:#c7d2fe;
+        }
+
+        .chat-avatar {
+            flex:0 0 28px;
+            height:28px;
+            border-radius:8px;
+            background:#eef2ff;
+            color:var(--primary);
+            font-size:.7rem;
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-transform:uppercase;
+        }
+
+        .chat-body {
+            flex:1;
+            min-width:0;
+        }
+
+        .chat-title {
+            font-size:.82rem;
+            font-weight:600;
+            color:#1e293b;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+
+        .chat-preview {
+            font-size:.72rem;
+            color:#94a3b8;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            margin-top:2px;
+        }
+
+        .chat-date {
+            font-size:.68rem;
+            color:#cbd5e1;
+            margin-top:3px;
+        }
+
+        .chat-delete {
+            position:absolute;
+            top:8px;
+            right:6px;
+            width:24px;
+            height:24px;
+            border:0;
+            background:transparent;
+            color:#cbd5e1;
+            font-size:15px;
+            line-height:1;
+            border-radius:6px;
+            cursor:pointer;
+            opacity:0;
+            transition:.2s;
+        }
+
+        .chat-item:hover .chat-delete {
+            opacity:1;
+        }
+
+        .chat-delete:hover {
+            background:#fee2e2;
+            color:#ef4444;
+        }
+
+        @media(max-width:800px) {
+            .location-section,
+            .location-section:nth-child(even) {
+                flex-direction:column;
+            }
+
+            .image-box {
+                width:100%;
+                height:55vh;
+            }
+
+            .content-box {
+                padding:80px 8% 50px;
+            }
+
+            .content-box h2 {
+                font-size:3.5rem;
+            }
+
+            .filters {
+                grid-template-columns:1fr;
+            }
+
+            .chat-delete {
+                opacity:1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ================= AUTH ================= -->
+
+<div id="auth-layer">
+
+    <div class="auth-card">
+
+        <button
+            type="button"
+            class="close-auth"
+            onclick="closeAuth()"
+            aria-label="Close login">
+            &times;
+        </button>
+
+        <h2 id="auth-title">Welcome back</h2>
+
+        <!-- LOGIN -->
+
+        <div id="login-fields">
+
+            <input
+                type="email"
+                id="login-email"
+                placeholder="Email (e.g. name@example.com)"
+                autocomplete="email">
+
+            <input
+                type="password"
+                id="login-pass"
+                placeholder="Password (min 6 characters)"
+                autocomplete="current-password">
+
+            <p class="auth-error" id="login-error"></p>
+
+            <button
+                class="btn-navy"
+                style="width:100%"
+                onclick="handleAuth('login')">
+                Login
+            </button>
+
+            <div style="display:flex;align-items:center;gap:10px;margin:18px 0;color:#94a3b8;font-size:.8rem;">
+                <span style="height:1px;background:#e5e7eb;flex:1;"></span>
+                <span>OR</span>
+                <span style="height:1px;background:#e5e7eb;flex:1;"></span>
+            </div>
+
+            <div id="google-login-button" style="display:flex;justify-content:center;"></div>
+            <p id="google-login-error" class="auth-error" style="margin-top:10px;"></p>
+
+            <p style="margin-top:15px;font-size:.8rem;">
+                No account?
+                <a href="#" onclick="toggleAuth(true);return false;">
+                    Register
+                </a>
+            </p>
+
+        </div>
+
+        <!-- REGISTER -->
+
+        <div id="reg-fields" class="hidden">
+
+            <input
+                type="text"
+                id="reg-name"
+                placeholder="Full Name"
+                autocomplete="name">
+
+            <input
+                type="email"
+                id="reg-email"
+                placeholder="Email (e.g. name@example.com)"
+                autocomplete="email">
+
+            <input
+                type="password"
+                id="reg-pass"
+                placeholder="Password (min 6 characters)"
+                autocomplete="new-password">
+
+            <p class="auth-error" id="reg-error"></p>
+
+            <p class="auth-success" id="reg-success"></p>
+
+            <button
+                class="btn-navy"
+                style="width:100%"
+                onclick="handleAuth('register')">
+                Create Account
+            </button>
+
+            <p style="margin-top:15px;font-size:.8rem;">
+                Already registered?
+                <a href="#" onclick="toggleAuth(false);return false;">
+                    Login
+                </a>
+            </p>
+
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ================= NAV ================= -->
+
+<nav>
+
+    <div class="logo">
+        SkyGuide India.
+    </div>
+
+    <button
+        class="btn-navy"
+        onclick="openAuth()">
+        Dashboard
+    </button>
+
+</nav>
+
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar" id="sidebar">
+
+    <h2 style="margin-bottom:2.5rem;color:var(--primary);">
+        Assistant
+    </h2>
+
+    <div
+        class="nav-item"
+        onclick="openWork('itin')">
+        🗓 AI Planner
+    </div>
+
+    <div
+        class="nav-item"
+        onclick="openWork('hotels');loadHotelCities()">
+        🏨 Hotels
+    </div>
+
+    <div
+        class="nav-item"
+        onclick="openWork('budg');loadBudgetCities()">
+        💰 Budget
+    </div>
+
+    <div
+        class="nav-item"
+        onclick="openWork('transport');loadTransportLocations()">
+        🚆 Transport
+    </div>
+
+
+    <!-- HISTORY -->
+
+    <div
+        style="
+            margin-top:20px;
+            border-top:1px solid #eee;
+            padding-top:18px;
+        ">
+
+        <div class="history-head">
+
+            <h3 style="font-size:1rem;">
+                📜 History
+            </h3>
+
+            <button
+                type="button"
+                class="clear-all"
+                id="clear-all-btn"
+                onclick="clearAllChats()">
+                Clear all
+            </button>
+
+        </div>
+
+        <div
+            id="past-chats"
+            style="
+                max-height:240px;
+                overflow-y:auto;
+            ">
+        </div>
+
+    </div>
+
+
+    <!-- LOGOUT -->
+
+    <button
+        class="btn-navy"
+        style="
+            margin-top:auto;
+            background:#fee2e2;
+            color:#ef4444;
+        "
+        onclick="logout()">
+        Logout
+    </button>
+
+</div>
+
+
+<!-- ================= WORK AREA ================= -->
+
+<div id="work-area" class="overlay">
+
+    <button
+        class="btn-navy"
+        onclick="closeWork()"
+        style="
+            margin-bottom:2rem;
+            background:#fff;
+            color:#333;
+            border:1px solid #ddd;
+        ">
+        ← Home
+    </button>
+
+
+    <!-- ================= AI PLANNER ================= -->
+
+    <div id="itin-ui" class="hidden">
+
+        <div class="card">
+
+            <h3>
+                🤖 AI Travel Planner
+            </h3>
+
+            <p style="color:#64748b;margin-top:6px;">
+                Fill in your trip basics, then tell the AI what kind of trip you want.
+            </p>
+
+            <div class="filters" style="margin-bottom:14px;">
+
+                <select
+                    id="ai-from"
+                    class="select">
+                    <option value="">From (your city)</option>
+                </select>
+
+                <select
+                    id="ai-city"
+                    class="select">
+                    <option value="">To (destination)</option>
+                </select>
+
+                <select
+                    id="ai-mode"
+                    class="select"
+                    onchange="updateAiTransportClass()">
+                    <option value="">Transport mode</option>
+                    <option value="Flight">✈️ Flight</option>
+                    <option value="Train">🚆 Train</option>
+                </select>
+
+                <select
+                    id="ai-transport-class"
+                    class="select">
+                    <option value="Economy">Economy</option>
+                    <option value="Business">Business</option>
+                </select>
+
+                <input
+                    type="number"
+                    id="ai-travelers"
+                    class="select"
+                    min="1"
+                    value="1"
+                    placeholder="Travelers">
+
+            </div>
+
+            <div
+                id="chat-out"
+                style="
+                    height:350px;
+                    overflow-y:auto;
+                    background:#F1F5F9;
+                    padding:20px;
+                    border-radius:15px;
+                    margin:20px 0;
+                ">
+            </div>
+
+            <div style="display:flex;gap:10px;">
+
+                <input
+                    type="number"
+                    id="chat-budget"
+                    placeholder="Budget ₹"
+                    style="
+                        width:140px;
+                        padding:12px;
+                        border:1px solid #ddd;
+                    ">
+
+                <input
+                    type="text"
+                    id="chat-msg"
+                    placeholder="e.g. 3 days, love beaches and local food"
+                    style="
+                        flex:1;
+                        padding:12px;
+                        border:1px solid #ddd;
+                    ">
+
+                <button
+                    class="btn-navy"
+                    onclick="sendAI()">
+                    Ask
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= HOTELS ================= -->
+
+    <div id="hotels-ui" class="hidden">
+
+        <div class="card">
+
+            <h2>🏨 Hotel Explorer</h2>
+
+            <p
+                style="
+                    color:#64748b;
+                    margin:8px 0 20px;
+                ">
+                Choose a location and price range to see hotels.
+            </p>
+
+
+            <div class="filters">
+
+                <select
+                    id="hotel-city"
+                    class="select"
+                    onchange="loadHotels()">
+
+                    <option value="">
+                        Select location
+                    </option>
+
+                    <option>Ahmedabad</option>
+                    <option>Allahabad</option>
+                    <option>Amravati</option>
+                    <option>Amritsar</option>
+                    <option>Aurangabad</option>
+                    <option>Bangalore</option>
+                    <option>Bhubaneswar</option>
+                    <option>Chandigarh</option>
+                    <option>Chennai</option>
+                    <option>Coimbatore</option>
+                    <option>Dehradun</option>
+                    <option>Delhi</option>
+                    <option>Durgapur</option>
+                    <option>Faridabad</option>
+                    <option>Gandhinagar</option>
+                    <option>Ghaziabad</option>
+                    <option>Goa</option>
+                    <option>Guwahati</option>
+                    <option>Gwalior</option>
+                    <option>Hazaribagh</option>
+                    <option>Hyderabad</option>
+                    <option>Indore</option>
+                    <option>Jaipur</option>
+                    <option>Jamshedpur</option>
+                    <option>Kanpur</option>
+                    <option>Kanyakumari</option>
+                    <option>Kashmir</option>
+                    <option>Kochi</option>
+                    <option>Kolkata</option>
+                    <option>Kumarakom</option>
+                    <option>Lucknow</option>
+                    <option>Ludhiana</option>
+                    <option>Mangalore</option>
+                    <option>Meerut</option>
+                    <option>Mumbai</option>
+                    <option>Mysore</option>
+                    <option>Nagpur</option>
+                    <option>Nashik</option>
+                    <option>Noida</option>
+                    <option>Patna</option>
+                    <option>Pondicherry</option>
+                    <option>Pune</option>
+                    <option>Raipur</option>
+                    <option>Ranchi</option>
+                    <option>Sikkim</option>
+                    <option>Srinagar</option>
+                    <option>Trivandrum</option>
+                    <option>Vadodara</option>
+                    <option>Varanasi</option>
+                    <option>Varkala</option>
+                    <option>Vijayawada</option>
+
+                </select>
+
+
+                <!-- SIMPLE HOTEL TIERS -->
+
+                <select
+                    id="hotel-tier"
+                    class="select"
+                    onchange="loadHotels()">
+
+                    <option value="">
+                        All price ranges
+                    </option>
+
+                    <option value="Budget">
+                        Budget
+                    </option>
+
+                    <option value="Standard">
+                        Standard
+                    </option>
+
+                    <option value="Premium">
+                        Premium
+                    </option>
+
+                    <option value="Luxury">
+                        Luxury
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div style="margin-top:15px;">
+
+                <select
+                    id="hotel-rating"
+                    class="select"
+                    onchange="loadHotels()">
+
+                    <option value="">
+                        Any rating
+                    </option>
+
+                    <option value="4.5">
+                        4.5+ rating
+                    </option>
+
+                    <option value="4">
+                        4.0+ rating
+                    </option>
+
+                    <option value="3.5">
+                        3.5+ rating
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <p
+                id="hotel-status"
+                style="
+                    margin-top:20px;
+                    color:#64748b;
+                ">
+            </p>
+
+            <div
+                id="hotel-results"
+                class="hotel-grid">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= BUDGET ================= -->
+
+    <div id="budg-ui" class="hidden">
+
+        <div class="card">
+
+            <h2>💰 Smart Budget</h2>
+
+            <p
+                style="
+                    color:#64748b;
+                    margin:8px 0 20px;
+                ">
+                Estimate your travel cost based on your destination,
+                transport and hotel choice.
+            </p>
+
+
+            <div class="filters">
+
+                <select
+                    id="budg-from"
+                    class="select"
+                    onchange="fetchBudgetFromUI()">
+
+                    <option value="">
+                        From district
+                    </option>
+
+                </select>
+
+
+                <select
+                    id="budg-city"
+                    class="select"
+                    onchange="checkSameBudgetLocation();fetchBudgetFromUI()">
+
+                    <option value="">
+                        To destination
+                    </option>
+
+                    <option value="Goa">Goa</option>
+                    <option value="Kolkata">Kolkata</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Jaipur">Jaipur</option>
+                    <option value="Amritsar">Amritsar</option>
+
+                </select>
+
+            </div>
+
+
+            <p
+                id="budget-route-error"
+                style="
+                    color:#ef4444;
+                    margin-top:8px;
+                    font-size:.85rem;
+                ">
+            </p>
+
+
+            <div
+                class="filters"
+                style="margin-top:15px;">
+
+                <select
+                    id="budg-mode"
+                    class="select"
+                    onchange="updateBudgetTransportClass();fetchBudgetFromUI()">
+
+                    <option value="">
+                        Transport mode
+                    </option>
+
+                    <option value="Flight">
+                        ✈️ Flight
+                    </option>
+
+                    <option value="Train">
+                        🚆 Train
+                    </option>
+
+                </select>
+
+
+                <select
+                    id="budg-transport-class"
+                    class="select"
+                    onchange="fetchBudgetFromUI()">
+
+                    <option value="Economy">
+                        Economy
+                    </option>
+
+                </select>
+
+
+                <input
+                    id="budg-travelers"
+                    class="select"
+                    type="number"
+                    min="1"
+                    value="1"
+                    placeholder="Travelers"
+                    onchange="fetchBudgetFromUI()">
+
+
+                <!-- SIMPLE BUDGET TIERS -->
+
+                <select
+                    id="budg-tier"
+                    class="select"
+                    onchange="fetchBudgetFromUI()">
+
+                    <option value="">
+                        Hotel price range
+                    </option>
+
+                    <option value="Budget">
+                        Budget
+                    </option>
+
+                    <option value="Standard">
+                        Standard
+                    </option>
+
+                    <option value="Premium">
+                        Premium
+                    </option>
+
+                    <option value="Luxury">
+                        Luxury
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                id="budg-res"
+                class="budget-grid">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= TRANSPORT ================= -->
+
+    <div id="transport-ui" class="hidden">
+
+        <div class="card">
+
+            <h2>🚆 Transport Explorer</h2>
+
+            <p
+                style="
+                    color:#64748b;
+                    margin:8px 0 20px;
+                ">
+                Search for flights or trains between your starting
+                district and destination.
+            </p>
+
+
+            <div class="filters">
+
+                <select
+                    id="transport-from"
+                    class="select"
+                    onchange="checkSameTransportLocation()">
+
+                    <option value="">
+                        From district
+                    </option>
+
+                </select>
+
+
+                <select
+                    id="transport-to"
+                    class="select"
+                    onchange="checkSameTransportLocation()">
+
+                    <option value="">
+                        To destination
+                    </option>
+
+                    <option value="Goa">Goa</option>
+                    <option value="Kolkata">Kolkata</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Jaipur">Jaipur</option>
+                    <option value="Amritsar">Amritsar</option>
+
+                </select>
+
+            </div>
+
+
+            <p
+                id="transport-route-error"
+                style="
+                    color:#ef4444;
+                    margin-top:8px;
+                    font-size:.85rem;
+                ">
+            </p>
+
+
+            <div
+                class="filters"
+                style="margin-top:15px;">
+
+                <select
+                    id="transport-mode"
+                    class="select"
+                    onchange="updateTransportClass()">
+
+                    <option value="">
+                        Select transport
+                    </option>
+
+                    <option value="Flight">
+                        ✈️ Flight
+                    </option>
+
+                    <option value="Train">
+                        🚆 Train
+                    </option>
+
+                </select>
+
+
+                <select
+                    id="transport-class"
+                    class="select">
+
+                    <option value="Economy">
+                        Economy
+                    </option>
+
+                </select>
+
+
+                <input
+                    id="transport-travelers"
+                    class="select"
+                    type="number"
+                    min="1"
+                    value="1"
+                    placeholder="Travelers">
+
+
+                <button
+                    class="btn-navy"
+                    onclick="searchTransport()">
+                    Search
+                </button>
+
+            </div>
+
+
+            <p
+                id="transport-status"
+                style="
+                    margin-top:20px;
+                    color:#64748b;
+                ">
+            </p>
+
+            <div
+                id="transport-results"
+                class="hotel-grid">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= HOMEPAGE ================= -->
+
+<div id="container">
+
+    <header
+        style="
+            height:60vh;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+        ">
+
+        <h1
+            style="
+                font-size:6rem;
+                letter-spacing:-5px;
+                color:var(--primary);
+            ">
+            Discover India.
+        </h1>
+
+        <p
+            style="
+                color:#64748b;
+                font-size:1.3rem;
+            ">
+            Hyper-localized travel planning powered by GenAI.
+        </p>
+
+
+        <!-- SEARCH -->
+
+        <div
+            id="location-search-wrap"
+            style="
+                width:min(760px,92%);
+                margin:28px auto 0;
+                position:relative;
+            ">
+
+            <div
+                style="
+                    display:flex;
+                    gap:10px;
+                    background:white;
+                    padding:8px;
+                    border-radius:16px;
+                    box-shadow:0 10px 35px rgba(15,23,42,.12);
+                ">
+
+                <input
+                    id="location-search"
+                    type="search"
+                    placeholder="Search a destination in India..."
+                    autocomplete="off"
+                    oninput="filterLocationSuggestions()"
+                    onkeydown="if(event.key==='Enter') searchLocationAndChat()"
+                    style="
+                        flex:1;
+                        border:0;
+                        outline:0;
+                        padding:14px 16px;
+                        font-size:16px;
+                        background:transparent;
+                    ">
+
+                <button
+                    class="btn-navy"
+                    type="button"
+                    onclick="searchLocationAndChat()">
+                    Search
+                </button>
+
+            </div>
+
+
+            <div
+                id="location-suggestions"
+                style="
+                    display:none;
+                    position:absolute;
+                    left:0;
+                    right:0;
+                    top:64px;
+                    background:white;
+                    border-radius:12px;
+                    box-shadow:0 12px 30px rgba(15,23,42,.15);
+                    z-index:50;
+                    overflow:hidden;
+                    text-align:left;
+                ">
+            </div>
+
+        </div>
+
+    </header>
+
+</div>
+
+
+<script>
+
+const API = "http://127.0.0.1:8000";
+
+let isLogged = false;
+let pendingCity = null;
+let aiRequestRunning = false;
+let activeChatId = null;
+
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
+async function checkSession() {
+
+    try {
+
+        const res = await fetch(
+            `${API}/auth/status`,
+            {
+                credentials:"include",
+                cache:"no-store"
+            }
+        );
+
+        const d = await res.json();
+
+        isLogged = !!d.logged_in;
+
+        if (isLogged) {
+            loadPastChats();
+        }
+
+    } catch(e) {
+
+        isLogged = false;
+
+    }
+
+}
+
+
+function clearLoginFields() {
+
+    const ids = [
+        "login-email",
+        "login-pass",
+        "reg-name",
+        "reg-email",
+        "reg-pass"
+    ];
+
+    ids.forEach(id => {
+
+        const el = document.getElementById(id);
+
+        if (el) {
+            el.value = "";
+        }
+
+    });
+
+    document.getElementById("login-error").textContent = "";
+    document.getElementById("reg-error").textContent = "";
+    document.getElementById("reg-success").textContent = "";
+
+}
+
+
+function closeAuth() {
+
+    const layer =
+        document.getElementById("auth-layer");
+
+    if (layer) {
+        layer.style.display = "none";
+    }
+
+    pendingCity = null;
+
+}
+
+
+function openAuth() {
+
+    if (!isLogged) {
+
+        /*
+         * Always clear old login details.
+         * This prevents the browser from showing
+         * the previous user's credentials.
+         */
+
+        clearLoginFields();
+
+        document.getElementById("auth-layer").style.display =
+            "flex";
+
+    } else {
+
+        toggleSidebar();
+
+    }
+
+}
+
+
+function toggleAuth(showRegister) {
+
+    document
+        .getElementById("login-fields")
+        .classList
+        .toggle("hidden", showRegister);
+
+    document
+        .getElementById("reg-fields")
+        .classList
+        .toggle("hidden", !showRegister);
+
+    document.getElementById("login-error").textContent = "";
+    document.getElementById("reg-error").textContent = "";
+    document.getElementById("reg-success").textContent = "";
+
+    document.getElementById("auth-title").textContent =
+        showRegister
+            ? "Create your account"
+            : "Welcome back";
+
+}
+
+
+function initializeGoogleLogin() {
+
+    if (!window.google || !google.accounts || !google.accounts.id) {
+        return;
+    }
+
+    google.accounts.id.initialize({
+        client_id: "631387090392-32t9oqn1ph8sjsks4o57qe3225ks8rma.apps.googleusercontent.com",
+        callback: handleGoogleLogin,
+        auto_select: false,
+        cancel_on_tap_outside: true
+    });
+
+    const button = document.getElementById("google-login-button");
+
+    if (button) {
+        button.innerHTML = "";
+        google.accounts.id.renderButton(
+            button,
+            {
+                type: "standard",
+                theme: "outline",
+                size: "large",
+                text: "signin_with",
+                shape: "rectangular",
+                width: 330
+            }
+        );
+    }
+}
+
+async function handleGoogleLogin(response) {
+
+    const errorEl = document.getElementById("google-login-error");
+
+    if (errorEl) errorEl.textContent = "";
+
+    if (!response || !response.credential) {
+        if (errorEl) {
+            errorEl.textContent = "Google login could not be completed.";
+        }
+        return;
+    }
+
+    try {
+        const res = await fetch(
+            `${API}/auth/google`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    credential: response.credential
+                })
+            }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(
+                data.message || "Google login failed."
+            );
+        }
+
+        const city = pendingCity;
+        pendingCity = null;
+
+        await checkSession();
+        await loadPastChats();
+
+        const layer = document.getElementById("auth-layer");
+        if (layer) layer.style.display = "none";
+
+        if (city) {
+            openWork("itin");
+            document.getElementById("chat-msg").value =
+                "Planning for " + city;
+            sendAI();
+        }
+
+    } catch (error) {
+        console.error("Google login error:", error);
+        if (errorEl) {
+            errorEl.textContent =
+                error.message || "Google login failed. Please try again.";
+        }
+    }
+}
+
+async function handleAuth(mode) {
+
+    const errEl =
+        document.getElementById(
+            mode === "login"
+                ? "login-error"
+                : "reg-error"
+        );
+
+    const successEl =
+        document.getElementById("reg-success");
+
+    errEl.textContent = "";
+
+    if (successEl) {
+        successEl.textContent = "";
+    }
+
+
+    const email =
+        document.getElementById(
+            mode === "login"
+                ? "login-email"
+                : "reg-email"
+        ).value.trim();
+
+    const pass =
+        document.getElementById(
+            mode === "login"
+                ? "login-pass"
+                : "reg-pass"
+        ).value;
+
+    const name =
+        mode === "register"
+            ? document.getElementById("reg-name").value.trim()
+            : "";
+
+
+    if (
+        !email ||
+        !pass ||
+        (mode === "register" && !name)
+    ) {
+
+        errEl.textContent =
+            "Please fill in all required fields.";
+
+        return;
+
+    }
+
+
+    const emailPattern =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
+
+        errEl.textContent =
+            "Please enter a valid email address.";
+
+        return;
+
+    }
+
+
+    if (pass.length < 6) {
+
+        errEl.textContent =
+            "Password must be at least 6 characters long.";
+
+        return;
+
+    }
+
+
+    try {
+
+        const res = await fetch(
+            `${API}/auth`,
+            {
+                method:"POST",
+                credentials:"include",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    mode,
+                    email,
+                    password:pass,
+                    name
+                })
+            }
+        );
+
+        const d = await res.json();
+
+
+        if (!res.ok) {
+
+            errEl.textContent =
+                d.message ||
+                "Authentication failed.";
+
+            return;
+
+        }
+
+
+        if (mode === "register") {
+
+            /*
+             * Clear registration fields and
+             * move to a completely fresh login form.
+             */
+
+            if (successEl) {
+                successEl.textContent =
+                    d.message ||
+                    "Account created successfully.";
+            }
+
+            document.getElementById("reg-name").value = "";
+            document.getElementById("reg-email").value = "";
+            document.getElementById("reg-pass").value = "";
+
+            toggleAuth(false);
+
+            document.getElementById("login-email").value =
+                email;
+
+            document.getElementById("login-pass").value = "";
+
+            document.getElementById("login-error").textContent =
+                "Account created. Please login with your password.";
+
+            return;
+
+        }
+
+
+        /* LOGIN SUCCESS */
+
+        isLogged = true;
+
+        document
+            .getElementById("auth-layer")
+            .style.display = "none";
+
+
+        /*
+         * Load only the history belonging to
+         * the newly logged-in account.
+         */
+
+        await loadPastChats();
+
+
+        if (pendingCity) {
+
+            const city = pendingCity;
+
+            pendingCity = null;
+
+            openWork("itin");
+
+            document.getElementById("chat-msg").value =
+                "Planning for " + city;
+
+            sendAI();
+
+        } else {
+
+            toggleSidebar();
+
+        }
+
+    } catch(err) {
+
+        errEl.textContent =
+            `Couldn't reach the server. Is the backend running on ${API}?`;
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            `${API}/auth/logout`,
+            {
+                method:"POST",
+                credentials:"include",
+                cache:"no-store"
+            }
+        );
+
+    } catch(e) {}
+
+
+    isLogged = false;
+
+    /*
+     * Clear frontend history immediately.
+     * This prevents the previous user's history
+     * from remaining visible after logout.
+     */
+
+    window.__pastChats = [];
+    activeChatId = null;
+
+    const historyBox =
+        document.getElementById("past-chats");
+
+    if (historyBox) {
+        historyBox.innerHTML = "";
+    }
+
+    const chatOut =
+        document.getElementById("chat-out");
+
+    if (chatOut) {
+        chatOut.innerHTML = "";
+    }
+
+
+    /*
+     * Clear login form so the next user starts
+     * with an empty login screen.
+     */
+
+    clearLoginFields();
+
+
+    document
+        .getElementById("sidebar")
+        .classList
+        .remove("open");
+
+    closeWork();
+
+}
+
+
+/* =========================================================
+   SIDEBAR / WORK AREA
+========================================================= */
+
+function toggleSidebar() {
+
+    document
+        .getElementById("sidebar")
+        .classList
+        .toggle("open");
+
+}
+
+
+function closeWork() {
+
+    document
+        .getElementById("work-area")
+        .classList
+        .remove("active");
+
+}
+
+
+function openWork(id) {
+
+    if (!isLogged) {
+
+        openAuth();
+
+        return;
+
+    }
+
+    document
+        .getElementById("work-area")
+        .classList
+        .add("active");
+
+    document
+        .querySelectorAll("#work-area > div")
+        .forEach(d =>
+            d.classList.add("hidden")
+        );
+
+    document
+        .getElementById(id + "-ui")
+        .classList
+        .remove("hidden");
+
+    document
+        .getElementById("sidebar")
+        .classList
+        .remove("open");
+
+}
+
+
+/* =========================================================
+   HOTEL CITIES
+========================================================= */
+
+async function loadHotelCities() {
+
+    try {
+
+        const res =
+            await fetch(`${API}/hotel-cities`);
+
+        if (!res.ok) return;
+
+        const cities =
+            await res.json();
+
+        const select =
+            document.getElementById("hotel-city");
+
+        const existing =
+            new Set(
+                [...select.options]
+                    .map(o =>
+                        o.value.toLowerCase()
+                    )
+            );
+
+        cities.forEach(city => {
+
+            if (!existing.has(city.toLowerCase())) {
+
+                const opt =
+                    document.createElement("option");
+
+                opt.value = city;
+                opt.textContent = city;
+
+                select.appendChild(opt);
+
+            }
+
+        });
+
+    } catch(e) {}
+
+}
+
+
+/* =========================================================
+   HOTEL LOADING + DUPLICATE REMOVAL
+========================================================= */
+
+async function loadHotels() {
+
+    const city =
+        document.getElementById("hotel-city").value;
+
+    const tier =
+        document.getElementById("hotel-tier").value;
+
+    const rating =
+        document.getElementById("hotel-rating").value;
+
+    const status =
+        document.getElementById("hotel-status");
+
+    const results =
+        document.getElementById("hotel-results");
+
+
+    if (!city) {
+
+        status.textContent =
+            "Select a location to see hotels.";
+
+        results.innerHTML = "";
+
+        return;
+
+    }
+
+
+    status.textContent =
+        "Loading hotels...";
+
+    results.innerHTML = "";
+
+
+    try {
+
+        const params =
+            new URLSearchParams({
+                city
+            });
+
+        if (tier) {
+            params.set("tier", tier);
+        }
+
+        if (rating) {
+            params.set("min_rating", rating);
+        }
+
+
+        const res =
+            await fetch(
+                `${API}/hotels?${params.toString()}`,
+                {
+                    cache:"no-store"
+                }
+            );
+
+        const d =
+            await res.json();
+
+
+        /*
+         * Remove duplicate hotels on the frontend.
+         *
+         * Same hotel name = one hotel.
+         * If duplicates exist with different prices/ratings,
+         * keep the best-rated / lowest-price representative.
+         */
+
+        const uniqueHotels = {};
+
+        (d.hotels || []).forEach(h => {
+
+            const key =
+                String(h.hotel_name || "")
+                    .trim()
+                    .toLowerCase();
+
+            if (!key) return;
+
+            if (!uniqueHotels[key]) {
+
+                uniqueHotels[key] = h;
+
+                return;
+
+            }
+
+            const old =
+                uniqueHotels[key];
+
+            const oldRating =
+                Number(old.rating || 0);
+
+            const newRating =
+                Number(h.rating || 0);
+
+            const oldPrice =
+                Number(old.price || Infinity);
+
+            const newPrice =
+                Number(h.price || Infinity);
+
+
+            /*
+             * Prefer higher rating.
+             * If rating is equal, prefer lower price.
+             */
+
+            if (
+                newRating > oldRating ||
+                (
+                    newRating === oldRating &&
+                    newPrice < oldPrice
+                )
+            ) {
+
+                uniqueHotels[key] = h;
+
+            }
+
+        });
+
+
+        const hotels =
+            Object.values(uniqueHotels);
+
+
+        status.textContent =
+            `${hotels.length} hotel(s) found in ${d.city || city}`;
+
+
+        if (!hotels.length) {
+
+            results.innerHTML =
+                '<p style="color:#ef4444;">No hotels match the selected filters.</p>';
+
+            return;
+
+        }
+
+
+        results.innerHTML =
+            hotels.map(h => `
+
+                <div class="hotel-card">
+
+                    <span class="badge">
+                        ${escapeHtml(
+                            h.tier || "Hotel"
+                        )}
+                    </span>
+
+                    <h3 style="margin-top:10px;">
+                        ${escapeHtml(
+                            h.hotel_name
+                        )}
+                    </h3>
+
+                    <p
+                        style="
+                            color:#f59e0b;
+                            margin-top:5px;
+                        ">
+                        ⭐ ${h.rating ?? "N/A"} / 5
+                    </p>
+
+                    <div class="hotel-price">
+                        ₹${Number(
+                            h.price || 0
+                        ).toLocaleString("en-IN")}
+
+                        <small
+                            style="
+                                font-size:.75rem;
+                                color:#64748b;
+                            ">
+                            / night
+                        </small>
+                    </div>
+
+                    <div class="features">
+                        ${
+                            h.features &&
+                            h.features.length
+                                ? h.features
+                                    .slice(0,5)
+                                    .map(escapeHtml)
+                                    .join(" · ")
+                                : "Dataset hotel"
+                        }
+                    </div>
+
+                    <div style="display:flex;gap:10px;margin-top:14px;">
+
+                        <a
+                            href="${h.hotel_link || ('https://www.google.com/search?q=' + encodeURIComponent(h.hotel_name + ' ' + h.city))}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn-navy"
+                            style="
+                                flex:1;
+                                text-align:center;
+                                text-decoration:none;
+                                padding:10px 20px;
+                            ">
+                            Search
+                        </a>
+
+                        <a
+                            href="${h.book_link || '#'}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn-navy"
+                            style="
+                                flex:1;
+                                text-align:center;
+                                text-decoration:none;
+                                padding:10px 20px;
+                                ${
+                                    h.book_link
+                                        ? ""
+                                        : "opacity:.45;pointer-events:none;cursor:not-allowed;"
+                                }
+                            "
+                            ${h.book_link ? "" : 'title="No direct booking link available"'}>
+                            Book
+                        </a>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+
+    } catch(e) {
+
+        console.error(e);
+
+        status.textContent =
+            "Could not load hotels.";
+
+    }
+
+}
+
+
+/* =========================================================
+   BUDGET
+========================================================= */
+
+async function loadBudgetCities() {
+
+    try {
+
+        const res =
+            await fetch(`${API}/hotel-cities`);
+
+        const cities =
+            await res.json();
+
+        ["budg-city", "ai-city"].forEach(selectId => {
+
+            const select =
+                document.getElementById(selectId);
+
+            if (!select) return;
+
+            const existing =
+                new Set(
+                    [...select.options]
+                        .map(o =>
+                            o.value.toLowerCase()
+                        )
+                );
+
+
+            cities.forEach(city => {
+
+                if (!existing.has(city.toLowerCase())) {
+
+                    const opt =
+                        document.createElement("option");
+
+                    opt.value = city;
+                    opt.textContent = city;
+
+                    select.appendChild(opt);
+
+                }
+
+            });
+
+        });
+
+
+        await loadTransportLocations();
+
+    } catch(e) {
+
+        console.warn(
+            "Could not load budget locations",
+            e
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SAME LOCATION CHECK - BUDGET
+========================================================= */
+
+function checkSameBudgetLocation() {
+
+    const from =
+        document.getElementById("budg-from").value
+            .trim()
+            .toLowerCase();
+
+    const to =
+        document.getElementById("budg-city").value
+            .trim()
+            .toLowerCase();
+
+    const error =
+        document.getElementById(
+            "budget-route-error"
+        );
+
+    const box =
+        document.getElementById("budg-res");
+
+
+    if (
+        from &&
+        to &&
+        from === to
+    ) {
+
+        error.textContent =
+            "Source and destination cannot be the same. Please choose a different destination.";
+
+        box.innerHTML = "";
+
+        return false;
+
+    }
+
+
+    error.textContent = "";
+
+    return true;
+
+}
+
+
+function updateAiTransportClass() {
+
+    const mode =
+        document.getElementById("ai-mode").value;
+
+    const select =
+        document.getElementById(
+            "ai-transport-class"
+        );
+
+    if (!select) return;
+
+    if (mode === "Train") {
+
+        select.innerHTML = `
+            <option value="SL">Sleeper (SL)</option>
+            <option value="3A">AC 3 Tier (3A)</option>
+            <option value="2A">AC 2 Tier (2A)</option>
+            <option value="1A">First AC (1A)</option>
+        `;
+
+    } else {
+
+        select.innerHTML = `
+            <option value="Economy">Economy</option>
+            <option value="Business">Business</option>
+        `;
+
+    }
+
+}
+
+
+function updateBudgetTransportClass() {
+
+    const mode =
+        document.getElementById("budg-mode").value;
+
+    const select =
+        document.getElementById(
+            "budg-transport-class"
+        );
+
+
+    if (mode === "Train") {
+
+        select.innerHTML = `
+
+            <option value="SL">
+                Sleeper (SL)
+            </option>
+
+            <option value="3A">
+                AC 3 Tier (3A)
+            </option>
+
+            <option value="2A">
+                AC 2 Tier (2A)
+            </option>
+
+            <option value="1A">
+                First AC (1A)
+            </option>
+
+        `;
+
+    } else {
+
+        select.innerHTML = `
+
+            <option value="Economy">
+                Economy
+            </option>
+
+            <option value="Business">
+                Business
+            </option>
+
+        `;
+
+    }
+
+}
+
+
+async function fetchBudgetFromUI() {
+
+    if (!checkSameBudgetLocation()) {
+        return;
+    }
+
+
+    const from =
+        document.getElementById("budg-from").value;
+
+    const city =
+        document.getElementById("budg-city").value;
+
+    const mode =
+        document.getElementById("budg-mode").value;
+
+    const transportClass =
+        document.getElementById(
+            "budg-transport-class"
+        ).value;
+
+    const travelers =
+        Number(
+            document.getElementById(
+                "budg-travelers"
+            ).value || 1
+        );
+
+    const tier =
+        document.getElementById(
+            "budg-tier"
+        ).value;
+
+    const box =
+        document.getElementById(
+            "budg-res"
+        );
+
+
+    if (!city) {
+
+        box.innerHTML = "";
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        "<p>Calculating budget...</p>";
+
+
+    try {
+
+        const res =
+            await fetch(
+                `${API}/calculate-budget`,
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        from,
+                        city,
+                        mode,
+                        transport_class:
+                            transportClass,
+                        travelers,
+                        tier
+                    })
+                }
+            );
+
+
+        const d =
+            await res.json();
+
+
+        if (!res.ok) {
+
+            box.innerHTML =
+                `<p style="color:#ef4444;">
+                    ${escapeHtml(
+                        d.message ||
+                        "Could not calculate budget."
+                    )}
+                </p>`;
+
+            return;
+
+        }
+
+
+        const transportNote =
+            mode
+                ? `${mode} · ${transportClass} · ${travelers} traveler(s) · ${d.transport_source || ""}`
+                : "Select a transport mode to include transport.";
+
+
+        box.innerHTML = `
+
+            <div class="metric">
+                <span>🏨 Hotel / night</span>
+                <strong>
+                    ₹${Number(
+                        d.hotel || 0
+                    ).toLocaleString("en-IN")}
+                </strong>
+            </div>
+
+            <div class="metric">
+                <span>🍴 Food</span>
+                <strong>
+                    ₹${Number(
+                        d.food || 0
+                    ).toLocaleString("en-IN")}
+                </strong>
+            </div>
+
+            <div class="metric">
+
+                <span>🚆 Transport</span>
+
+                <strong>
+                    ₹${Number(
+                        d.transport || 0
+                    ).toLocaleString("en-IN")}
+                </strong>
+
+                ${
+                    d.transport_per_person != null
+                        ? `
+                            <small
+                                style="
+                                    display:block;
+                                    color:#64748b;
+                                    margin-top:5px;
+                                ">
+                                ₹${Number(
+                                    d.transport_per_person
+                                ).toLocaleString("en-IN")}
+                                / person
+                            </small>
+                          `
+                        : ""
+                }
+
+            </div>
+
+            <div class="metric">
+
+                <span>🎟 Activities</span>
+
+                <strong>
+                    ₹${Number(
+                        d.activities || 0
+                    ).toLocaleString("en-IN")}
+                </strong>
+
+            </div>
+
+            <div class="metric">
+
+                <span>🛡 Emergency</span>
+
+                <strong>
+                    ₹${Number(
+                        d.emergency || 0
+                    ).toLocaleString("en-IN")}
+                </strong>
+
+            </div>
+
+            <div
+                class="metric"
+                style="
+                    background:var(--primary);
+                    color:white;
+                ">
+
+                <span>
+                    Total estimate
+                </span>
+
+                <strong>
+                    ₹${Number(
+                        d.total || 0
+                    ).toLocaleString("en-IN")}
+                </strong>
+
+            </div>
+
+            <p
+                style="
+                    grid-column:1/-1;
+                    color:#64748b;
+                    font-size:.85rem;
+                ">
+
+                ${escapeHtml(
+                    d.from ||
+                    "From district not selected"
+                )}
+
+                →
+
+                ${escapeHtml(d.city)}
+
+                · Hotel price range:
+                ${escapeHtml(
+                    d.budget_level || "Standard"
+                )}
+
+                ·
+
+                ${escapeHtml(
+                    transportNote
+                )}
+
+            </p>
+
+        `;
+
+
+    } catch(e) {
+
+        console.error(e);
+
+        box.innerHTML =
+            '<p style="color:#ef4444;">Could not calculate budget. Check that the backend is running.</p>';
+
+    }
+
+}
+
+
+/* =========================================================
+   TRANSPORT LOCATIONS
+========================================================= */
+
+async function loadTransportLocations() {
+
+    try {
+
+        const res =
+            await fetch(
+                `${API}/transport-locations`,
+                {
+                    cache:"no-store"
+                }
+            );
+
+
+        if (!res.ok) {
+            throw new Error(
+                `HTTP ${res.status}`
+            );
+        }
+
+
+        const d =
+            await res.json();
+
+
+        const districts =
+            d.districts || [];
+
+        const destinations =
+            d.destinations ||
+            [
+                "Goa",
+                "Kolkata",
+                "Mumbai",
+                "Jaipur",
+                "Amritsar"
+            ];
+
+
+        const populate =
+            (
+                id,
+                values,
+                placeholder
+            ) => {
+
+                const select =
+                    document.getElementById(id);
+
+                if (!select) return;
+
+
+                select.innerHTML =
+                    `<option value="">
+                        ${placeholder}
+                    </option>`;
+
+
+                values.forEach(value => {
+
+                    const opt =
+                        document.createElement("option");
+
+                    opt.value = value;
+                    opt.textContent = value;
+
+                    select.appendChild(opt);
+
+                });
+
+            };
+
+
+        populate(
+            "transport-from",
+            districts,
+            "From district"
+        );
+
+        populate(
+            "transport-to",
+            destinations,
+            "To destination"
+        );
+
+        populate(
+            "budg-from",
+            districts,
+            "From district"
+        );
+
+        populate(
+            "ai-from",
+            districts,
+            "From (your city)"
+        );
+
+
+    } catch(e) {
+
+        console.warn(
+            "Could not load transport locations",
+            e
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SAME LOCATION CHECK - TRANSPORT
+========================================================= */
+
+function checkSameTransportLocation() {
+
+    const from =
+        document.getElementById(
+            "transport-from"
+        ).value
+            .trim()
+            .toLowerCase();
+
+    const to =
+        document.getElementById(
+            "transport-to"
+        ).value
+            .trim()
+            .toLowerCase();
+
+    const error =
+        document.getElementById(
+            "transport-route-error"
+        );
+
+
+    if (
+        from &&
+        to &&
+        from === to
+    ) {
+
+        error.textContent =
+            "Source and destination cannot be the same. Please choose a different destination.";
+
+        return false;
+
+    }
+
+
+    error.textContent = "";
+
+    return true;
+
+}
+
+
+function updateTransportClass() {
+
+    const mode =
+        document.getElementById(
+            "transport-mode"
+        ).value;
+
+    const select =
+        document.getElementById(
+            "transport-class"
+        );
+
+
+    if (mode === "Train") {
+
+        select.innerHTML = `
+
+            <option value="SL">
+                Sleeper (SL)
+            </option>
+
+            <option value="3A">
+                AC 3 Tier (3A)
+            </option>
+
+            <option value="2A">
+                AC 2 Tier (2A)
+            </option>
+
+            <option value="1A">
+                First AC (1A)
+            </option>
+
+        `;
+
+    } else {
+
+        select.innerHTML = `
+
+            <option value="Economy">
+                Economy
+            </option>
+
+            <option value="Business">
+                Business
+            </option>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   TRANSPORT SEARCH
+========================================================= */
+
+async function searchTransport() {
+
+    if (!checkSameTransportLocation()) {
+
+        document.getElementById(
+            "transport-status"
+        ).textContent =
+            "Please select different source and destination.";
+
+        document.getElementById(
+            "transport-results"
+        ).innerHTML = "";
+
+        return;
+
+    }
+
+
+    const from =
+        document.getElementById(
+            "transport-from"
+        ).value;
+
+    const to =
+        document.getElementById(
+            "transport-to"
+        ).value;
+
+    const mode =
+        document.getElementById(
+            "transport-mode"
+        ).value;
+
+    const transportClass =
+        document.getElementById(
+            "transport-class"
+        ).value;
+
+    const travelers =
+        Number(
+            document.getElementById(
+                "transport-travelers"
+            ).value || 1
+        );
+
+    const status =
+        document.getElementById(
+            "transport-status"
+        );
+
+    const results =
+        document.getElementById(
+            "transport-results"
+        );
+
+
+    if (!from || !to || !mode) {
+
+        status.textContent =
+            "Select a starting district, destination and transport mode.";
+
+        results.innerHTML = "";
+
+        return;
+
+    }
+
+
+    status.textContent =
+        "Searching the dataset...";
+
+    results.innerHTML = "";
+
+
+    try {
+
+        const params =
+            new URLSearchParams({
+                from,
+                to,
+                class:transportClass
+            });
+
+
+        const endpoint =
+            mode === "Flight"
+                ? `${API}/transport/flights?${params}`
+                : `${API}/transport/trains?${params}`;
+
+
+        const res =
+            await fetch(endpoint);
+
+        const d =
+            await res.json();
+
+
+        if (!res.ok) {
+
+            status.textContent =
+                d.message ||
+                "No results.";
+
+            return;
+
+        }
+
+
+        if (mode === "Flight") {
+
+            status.textContent =
+                d.estimated
+                    ? "No exact route in the dataset · showing an estimated fare"
+                    : `${d.count} flight record(s) found in the dataset`;
+
+
+            results.innerHTML =
+                (d.flights || [])
+                    .map(f => `
+
+                        <div class="hotel-card">
+
+                            <span class="badge">
+                                ✈️ ${escapeHtml(
+                                    f.class ||
+                                    transportClass
+                                )}
+                            </span>
+
+                            <h3 style="margin-top:10px;">
+                                ${escapeHtml(
+                                    f.airline ||
+                                    "Air India"
+                                )}
+                                ·
+                                ${escapeHtml(
+                                    f.flight || ""
+                                )}
+                            </h3>
+
+                            <p>
+                                ${escapeHtml(
+                                    f.source_city ||
+                                    from
+                                )}
+                                →
+                                ${escapeHtml(
+                                    f.destination_city ||
+                                    to
+                                )}
+                            </p>
+
+                            <p
+                                style="
+                                    color:#64748b;
+                                    margin-top:6px;
+                                ">
+
+                                ${escapeHtml(
+                                    f.departure_time ||
+                                    "Estimated"
+                                )}
+
+                                →
+
+                                ${escapeHtml(
+                                    f.arrival_time ||
+                                    "Estimated"
+                                )}
+
+                                ·
+
+                                ${escapeHtml(
+                                    f.stops ||
+                                    "Estimated"
+                                )}
+
+                            </p>
+
+                            <div class="hotel-price">
+
+                                ₹${Number(
+                                    f.price || 0
+                                ).toLocaleString("en-IN")}
+
+                                <small
+                                    style="
+                                        font-size:.75rem;
+                                        color:#64748b;
+                                    ">
+                                    / person
+                                </small>
+
+                            </div>
+
+                            <div class="features">
+                                ${
+                                    f.estimated
+                                        ? "Estimated fare based on route/state distance."
+                                        : "Real flight record from the supplied dataset."
+                                }
+                            </div>
+
+                        </div>
+
+                    `)
+                    .join("");
+
+
+        } else {
+
+            status.textContent =
+                d.estimated
+                    ? "No exact train fare/route found · showing an estimated fare"
+                    : `${d.count} train route(s) found in the datasets`;
+
+
+            results.innerHTML =
+                (d.trains || [])
+                    .map(t => {
+
+                        const fare =
+                            t.fare_per_person == null
+                                ? "Fare unavailable"
+                                : `₹${Number(
+                                    t.fare_per_person
+                                ).toLocaleString("en-IN")} / person`;
+
+
+                        const duration =
+                            t.duration_minutes == null
+                                ? ""
+                                : ` · ${Math.floor(
+                                    t.duration_minutes / 60
+                                )}h ${
+                                    t.duration_minutes % 60
+                                }m`;
+
+
+                        return `
+
+                            <div class="hotel-card">
+
+                                <span class="badge">
+                                    🚆 ${escapeHtml(
+                                        t.class_code ||
+                                        transportClass
+                                    )}
+                                </span>
+
+                                <h3 style="margin-top:10px;">
+                                    ${escapeHtml(
+                                        t.train_name ||
+                                        "Indian Railways"
+                                    )}
+                                </h3>
+
+                                <p>
+                                    Train
+                                    ${escapeHtml(
+                                        t.train_number ||
+                                        ""
+                                    )}
+                                </p>
+
+                                <p>
+                                    ${escapeHtml(
+                                        t.from ||
+                                        from
+                                    )}
+                                    →
+                                    ${escapeHtml(
+                                        t.to ||
+                                        to
+                                    )}
+                                </p>
+
+                                <p
+                                    style="
+                                        color:#64748b;
+                                        margin-top:6px;
+                                    ">
+
+                                    ${
+                                        t.distance_km == null
+                                            ? "Estimated distance"
+                                            : Number(
+                                                t.distance_km
+                                            ).toLocaleString(
+                                                "en-IN"
+                                            ) + " km"
+                                    }
+
+                                    ${duration}
+
+                                </p>
+
+                                <div class="hotel-price">
+                                    ${fare}
+                                </div>
+
+                                <div class="features">
+                                    ${escapeHtml(
+                                        t.fare_source ||
+                                        "Train fare dataset"
+                                    )}
+                                </div>
+
+                            </div>
+
+                        `;
+
+                    })
+                    .join("");
+
+        }
+
+
+    } catch(e) {
+
+        console.error(e);
+
+        status.textContent =
+            "Could not load transport data. Check that the backend is running.";
+
+        results.innerHTML = "";
+
+    }
+
+}
+
+
+/* =========================================================
+   AI PLANNER
+========================================================= */
+
+function openProtectedWork(city) {
+
+    if (!isLogged) {
+
+        pendingCity = city;
+
+        openAuth();
+
+        return;
+
+    }
+
+
+    openWork("itin");
+
+    document.getElementById(
+        "chat-msg"
+    ).value =
+        "Planning for " + city;
+
+}
+
+
+const FEATURED_SEARCH_LOCATIONS = [
+    "Mumbai",
+    "Goa",
+    "Jaipur",
+    "Ladakh",
+    "Kolkata",
+    "Jodhpur",
+    "Varanasi",
+    "Delhi",
+    "Amritsar"
+];
+
+
+let SEARCH_LOCATIONS =
+    [...FEATURED_SEARCH_LOCATIONS];
+
+
+async function loadSearchLocations() {
+
+    try {
+
+        const res =
+            await fetch(
+                `${API}/hotel-cities`
+            );
+
+        if (!res.ok) return;
+
+        const cities =
+            await res.json();
+
+
+        SEARCH_LOCATIONS =
+            [
+                ...new Set([
+                    ...FEATURED_SEARCH_LOCATIONS,
+                    ...cities
+                ])
+            ];
+
+
+    } catch(e) {
+
+        SEARCH_LOCATIONS =
+            [...FEATURED_SEARCH_LOCATIONS];
+
+    }
+
+}
+
+
+function filterLocationSuggestions() {
+
+    const input =
+        document.getElementById(
+            "location-search"
+        );
+
+    const box =
+        document.getElementById(
+            "location-suggestions"
+        );
+
+    const q =
+        input.value
+            .trim()
+            .toLowerCase();
+
+
+    if (!q) {
+
+        box.style.display =
+            "none";
+
+        box.innerHTML = "";
+
+        return;
+
+    }
+
+
+    const matches =
+        SEARCH_LOCATIONS
+            .filter(x =>
+                x.toLowerCase()
+                    .includes(q)
+            )
+            .slice(0,6);
+
+
+    if (!matches.length) {
+
+        box.style.display =
+            "none";
+
+        box.innerHTML = "";
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        matches.map(city => `
+
+            <button
+                type="button"
+                onclick="selectLocationSearch('${city.replace(/'/g,"\\'")}')"
+                style="
+                    display:block;
+                    width:100%;
+                    text-align:left;
+                    border:0;
+                    background:white;
+                    padding:12px 16px;
+                    cursor:pointer;
+                ">
+
+                ${escapeHtml(city)}
+
+            </button>
+
+        `).join("");
+
+
+    box.style.display =
+        "block";
+
+}
+
+
+function selectLocationSearch(city) {
+
+    document.getElementById(
+        "location-search"
+    ).value = city;
+
+    document.getElementById(
+        "location-suggestions"
+    ).style.display = "none";
+
+    searchLocationAndChat();
+
+}
+
+
+function searchLocationAndChat() {
+
+    const input =
+        document.getElementById(
+            "location-search"
+        );
+
+    const city =
+        input.value.trim();
+
+
+    if (!city) return;
+
+
+    if (!isLogged) {
+
+        pendingCity = city;
+
+        openAuth();
+
+        return;
+
+    }
+
+
+    openWork("itin");
+
+    document.getElementById(
+        "chat-msg"
+    ).value =
+        "Planning for " + city;
+
+    sendAI();
+
+}
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function chatInitials(text) {
+
+    const clean =
+        String(text || "").trim();
+
+    if (!clean) return "TC";
+
+    const parts =
+        clean.split(/\s+/).filter(Boolean);
+
+    if (parts.length === 1) {
+        return parts[0].slice(0, 2);
+    }
+
+    return (parts[0][0] + parts[1][0]);
+
+}
+
+
+async function loadPastChats() {
+
+    const box =
+        document.getElementById(
+            "past-chats"
+        );
+
+    const clearBtn =
+        document.getElementById(
+            "clear-all-btn"
+        );
+
+
+    if (!box || !isLogged) return;
+
+
+    try {
+
+        const res =
+            await fetch(
+                `${API}/chat-history`,
+                {
+                    credentials:"include",
+                    cache:"no-store"
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if (
+            !data.chats ||
+            !data.chats.length
+        ) {
+
+            box.innerHTML =
+                '<p style="color:#94a3b8;font-size:.82rem;padding:6px 2px;">No saved chats yet.</p>';
+
+            window.__pastChats = [];
+
+            if (clearBtn) {
+                clearBtn.style.display = "none";
+            }
+
+            return;
+
+        }
+
+
+        window.__pastChats =
+            data.chats;
+
+
+        if (clearBtn) {
+            clearBtn.style.display = "inline-block";
+        }
+
+
+        box.innerHTML =
+            data.chats
+                .map(c => {
+
+                    const id =
+                        String(c.id || "");
+
+                    const preview =
+                        String(c.reply || "")
+                            .replace(/\s+/g, " ")
+                            .trim()
+                            .slice(0, 70);
+
+                    return `
+
+                        <div
+                            class="chat-item ${
+                                activeChatId === id
+                                    ? "active"
+                                    : ""
+                            }"
+                            onclick="openPastChat('${id}')">
+
+                            <div class="chat-avatar">
+                                ${escapeHtml(
+                                    chatInitials(c.title)
+                                )}
+                            </div>
+
+                            <div class="chat-body">
+
+                                <div class="chat-title">
+                                    ${escapeHtml(
+                                        c.title ||
+                                        "Travel chat"
+                                    )}
+                                </div>
+
+                                <div class="chat-preview">
+                                    ${escapeHtml(
+                                        preview ||
+                                        "No reply saved"
+                                    )}
+                                </div>
+
+                                <div class="chat-date">
+                                    ${escapeHtml(
+                                        c.created_at ||
+                                        ""
+                                    )}
+                                </div>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                class="chat-delete"
+                                title="Delete this chat"
+                                onclick="event.stopPropagation();deleteChat('${id}')">
+                                &times;
+                            </button>
+
+                        </div>
+
+                    `;
+
+                })
+                .join("");
+
+
+    } catch(e) {
+
+        box.innerHTML =
+            '<p style="color:#ef4444;font-size:.82rem;">Could not load history.</p>';
+
+    }
+
+}
+
+
+function openPastChat(chatId) {
+
+    const chat =
+        (
+            window.__pastChats ||
+            []
+        ).find(c =>
+            String(c.id) === String(chatId)
+        );
+
+
+    if (!chat) return;
+
+
+    activeChatId = String(chatId);
+
+
+    openWork("itin");
+
+
+    const box =
+        document.getElementById(
+            "chat-out"
+        );
+
+
+    box.innerHTML = `
+
+        <p>
+            <b>You:</b>
+            ${escapeHtml(
+                chat.message ||
+                ""
+            )}
+        </p>
+
+        <div
+            style="
+                background:white;
+                padding:15px;
+                border-radius:10px;
+                margin-bottom:15px;
+                border:1px solid #eee;
+            ">
+            ${escapeHtml(
+                chat.reply ||
+                ""
+            ).replace(/\n/g, "<br>")}
+        </div>
+
+    `;
+
+
+    document.getElementById(
+        "chat-msg"
+    ).value =
+        chat.message ||
+        "";
+
+
+    loadPastChats();
+
+}
+
+
+async function deleteChat(chatId) {
+
+    if (!confirm("Delete this chat from your history?")) {
+        return;
+    }
+
+
+    try {
+
+        const res =
+            await fetch(
+                `${API}/chat-history/${encodeURIComponent(chatId)}`,
+                {
+                    method:"DELETE",
+                    credentials:"include",
+                    cache:"no-store"
+                }
+            );
+
+
+        if (!res.ok) {
+            throw new Error("Delete failed");
+        }
+
+
+        if (activeChatId === String(chatId)) {
+
+            activeChatId = null;
+
+            const box =
+                document.getElementById("chat-out");
+
+            if (box) box.innerHTML = "";
+
+        }
+
+
+        await loadPastChats();
+
+
+    } catch(e) {
+
+        console.warn(
+            "Could not delete chat:",
+            e
+        );
+
+        alert("Could not delete that chat. Please try again.");
+
+    }
+
+}
+
+
+async function clearAllChats() {
+
+    if (!confirm("Delete all saved chats? This cannot be undone.")) {
+        return;
+    }
+
+
+    try {
+
+        const res =
+            await fetch(
+                `${API}/chat-history`,
+                {
+                    method:"DELETE",
+                    credentials:"include",
+                    cache:"no-store"
+                }
+            );
+
+
+        if (!res.ok) {
+            throw new Error("Clear failed");
+        }
+
+
+        activeChatId = null;
+
+
+        const box =
+            document.getElementById("chat-out");
+
+        if (box) box.innerHTML = "";
+
+
+        await loadPastChats();
+
+
+    } catch(e) {
+
+        console.warn(
+            "Could not clear history:",
+            e
+        );
+
+        alert("Could not clear your history. Please try again.");
+
+    }
+
+}
+
+
+/* =========================================================
+   SEND AI
+========================================================= */
+
+async function sendAI() {
+
+    if (aiRequestRunning) return;
+
+
+    const input =
+        document.getElementById(
+            "chat-msg"
+        );
+
+    const m =
+        input.value.trim();
+
+
+    if (!m) return;
+
+
+    aiRequestRunning = true;
+
+
+    const box =
+        document.getElementById(
+            "chat-out"
+        );
+
+
+    const budgetVal =
+        document.getElementById(
+            "chat-budget"
+        ).value;
+
+
+    const loadingId =
+        "ai-loading-" +
+        Date.now();
+
+
+    box.innerHTML += `
+
+        <p>
+            <b>You:</b>
+            ${escapeHtml(m)}
+        </p>
+
+        <p
+            id="${loadingId}"
+            style="color:gray">
+
+            🤖 Preparing your travel plan...
+
+        </p>
+
+    `;
+
+
+    input.value = "";
+
+    box.scrollTop =
+        box.scrollHeight;
+
+
+    const controller =
+        new AbortController();
+
+
+    const timer =
+        setTimeout(
+            () => controller.abort(),
+            60000
+        );
+
+
+    try {
+
+        const res =
+            await fetch(
+                `${API}/ai-itinerary`,
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                message: m,
+                budget: budgetVal || null,
+
+                // Trip basics selected directly in the AI Planner card.
+                // The backend remains responsible for calculating the fare.
+                from: document.getElementById("ai-from")?.value || "",
+                city: document.getElementById("ai-city")?.value || "",
+                mode: document.getElementById("ai-mode")?.value || "",
+                transport_class:
+                    document.getElementById("ai-transport-class")?.value || "",
+                travelers:
+                    Number(
+                        document.getElementById("ai-travelers")?.value || 1
+                    )
+            }),
+                    signal:
+                        controller.signal
+                }
+            );
+
+
+        clearTimeout(timer);
+
+
+        const d =
+            await res.json();
+
+
+        const loading =
+            document.getElementById(
+                loadingId
+            );
+
+
+        if (loading) {
+            loading.remove();
+        }
+
+
+        if (!res.ok) {
+
+            throw new Error(
+                d.reply ||
+                d.message ||
+                "AI request failed"
+            );
+
+        }
+
+
+        box.innerHTML += `
+
+            <div
+                style="
+                    background:white;
+                    padding:15px;
+                    border-radius:10px;
+                    margin-bottom:15px;
+                    border:1px solid #eee;
+                ">
+
+                ${escapeHtml(
+                    d.reply || ""
+                ).replace(
+                    /\n/g,
+                    "<br>"
+                )}
+
+            </div>
+
+        `;
+
+
+        /*
+         * Save the conversation to the
+         * currently logged-in user's history.
+         */
+
+        if (isLogged) {
+
+            try {
+
+                await fetch(
+                    `${API}/chat-history`,
+                    {
+                        method:"POST",
+                        credentials:"include",
+                        headers:{
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body:JSON.stringify({
+                            message:m,
+                            reply:
+                                d.reply ||
+                                ""
+                        })
+                    }
+                );
+
+
+                /*
+                 * Refresh History immediately.
+                 */
+
+                await loadPastChats();
+
+
+            } catch(historyError) {
+
+                console.warn(
+                    "Could not save chat history:",
+                    historyError
+                );
+
+            }
+
+        }
+
+
+    } catch(err) {
+
+        clearTimeout(timer);
+
+
+        const loading =
+            document.getElementById(
+                loadingId
+            );
+
+
+        if (loading) {
+            loading.remove();
+        }
+
+
+        box.innerHTML += `
+
+            <p style="color:#ef4444;">
+
+                ${
+                    err.name === "AbortError"
+                        ? "The AI took too long to respond. Please try again."
+                        : "Couldn't reach the AI service. Please try again."
+                }
+
+            </p>
+
+        `;
+
+
+    } finally {
+
+        aiRequestRunning = false;
+
+        box.scrollTop =
+            box.scrollHeight;
+
+    }
+
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function escapeHtml(value) {
+
+    return String(
+        value ?? ""
+    ).replace(
+        /[&<>"']/g,
+        c => ({
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#039;"
+        }[c])
+    );
+
+}
+
+
+/* =========================================================
+   EMBEDDED IMAGES
+========================================================= */
+
+function getEmbeddedImage(city) {
+
+    const imageMap = {
+
+        Mumbai:
+            "images/mumbai.webp",
+
+        Goa:
+            "images/goa.webp",
+
+        Jaipur:
+            "images/jaipur.webp",
+
+        Ladakh:
+            "images/ladakh.webp",
+
+        Kolkata:
+            "images/kolkata.webp",
+
+        Jodhpur:
+            "images/jodhpur.webp",
+
+        Varanasi:
+            "images/varanasi.webp",
+
+        Delhi:
+            "images/delhi.webp",
+
+        Amritsar:
+            "images/amritsar.webp"
+
+    };
+
+
+    return imageMap[city] || "";
+
+}
+
+
+/* =========================================================
+   HOMEPAGE LOCATIONS
+========================================================= */
+
+function renderLocations(data) {
+
+    /*
+     * Only these 9 locations are allowed
+     * to appear on the homepage.
+     */
+
+    const allowedLocations = [
+
+        "Amritsar",
+        "Delhi",
+        "Jodhpur",
+        "Jaipur",
+        "Goa",
+        "Kolkata",
+        "Ladakh",
+        "Mumbai",
+        "Varanasi"
+
+    ];
+
+
+    const available =
+        (data || [])
+            .filter(location => {
+
+                const city =
+                    String(
+                        location.city || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
+                return allowedLocations.some(
+                    allowed =>
+                        allowed.toLowerCase() === city
+                );
+
+            });
+
+
+    /*
+     * Randomize.
+     */
+
+    const shuffled =
+        [...available]
+            .sort(
+                () =>
+                    Math.random() - 0.5
+            );
+
+
+    /*
+     * Show exactly 5.
+     */
+
+    const featured =
+        shuffled.slice(0,5);
+
+
+    document
+        .getElementById("container")
+        .innerHTML +=
+
+        featured.map(l => `
+
+            <section
+                class="location-section">
+
+                <div class="content-box">
+
+                    <span
+                        style="
+                            font-weight:700;
+                            color:var(--primary);
+                            font-size:0.8rem;
+                        ">
+
+                        INDIA ·
+                        ${(l.budget_level || "")
+                            .toUpperCase()}
+
+                    </span>
+
+
+                    <h2>
+                        ${escapeHtml(
+                            l.city
+                        )}
+                    </h2>
+
+
+                    <p>
+                        ${escapeHtml(
+                            l.short_description ||
+                            ""
+                        )}
+                    </p>
+
+
+                    <p
+                        style="
+                            font-size:0.85rem;
+                            color:var(--primary);
+                            font-weight:600;
+                            margin-bottom:15px;
+                        ">
+
+                        ${(l.top_themes || [])
+                            .map(escapeHtml)
+                            .join(" · ")}
+
+                    </p>
+
+
+                    <button
+                        class="btn-navy"
+                        onclick='openProtectedWork(
+                            ${JSON.stringify(l.city)}
+                        )'>
+
+                        Go to AI Planner
+
+                    </button>
+
+                </div>
+
+
+                <div class="image-box">
+
+                    <img
+                        src="${
+                            l.img_url
+                                ? (
+                                    l.img_url.startsWith("http")
+                                        ? l.img_url
+                                        : API + "/" + l.img_url
+                                )
+                                : getEmbeddedImage(
+                                    l.city
+                                )
+                        }"
+
+                        alt="${escapeHtml(
+                            l.city
+                        )}"
+
+                        loading="lazy"
+
+                        onerror="
+                            this.onerror=null;
+                            this.src='${
+                                l.image_fallback ||
+                                getEmbeddedImage(
+                                    l.city
+                                ) ||
+                                ""
+                            }';
+                        "
+                    >
+
+                </div>
+
+            </section>
+
+        `)
+        .join("");
+
+
+    /*
+     * Keep the existing scroll animation.
+     */
+
+    const observer =
+        new IntersectionObserver(
+            entries => {
+
+                entries.forEach(
+                    entry => {
+
+                        if (
+                            entry.isIntersecting
+                        ) {
+
+                            entry.target
+                                .classList
+                                .add("active");
+
+                        }
+
+                    }
+                );
+
+            },
+            {
+                threshold:0.3
+            }
+        );
+
+
+    document
+        .querySelectorAll(
+            ".location-section"
+        )
+        .forEach(
+            section =>
+                observer.observe(section)
+        );
+
+}
+
+
+/* =========================================================
+   PAGE LOAD
+========================================================= */
+
+window.onload = async () => {
+
+    await checkSession();
+
+    const initGoogle = () => initializeGoogleLogin();
+    if (window.google && google.accounts && google.accounts.id) {
+        initGoogle();
+    } else {
+        setTimeout(initGoogle, 1000);
+    }
+
+    await loadSearchLocations();
+
+    await loadTransportLocations();
+
+
+    try {
+
+        const res =
+            await fetch(
+                `${API}/get-popular`,
+                {
+                    cache:"no-store"
+                }
+            );
+
+
+        if (!res.ok) {
+
+            throw new Error(
+                `Server returned ${res.status}`
+            );
+
+        }
+
+
+        const data =
+            await res.json();
+
+
+        renderLocations(data);
+
+
+    } catch(err) {
+
+        console.error(err);
+
+
+        document
+            .getElementById("container")
+            .innerHTML += `
+
+                <p
+                    style="
+                        text-align:center;
+                        color:#ef4444;
+                        padding:2rem;
+                    ">
+
+                    Couldn't load destinations —
+                    is the backend running on
+                    ${API}?
+
+                </p>
+
+            `;
+
+    }
+
+};
+
+</script>
+
+</body>
+</html>

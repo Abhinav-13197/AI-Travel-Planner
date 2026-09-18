@@ -1,0 +1,26 @@
+# Secrets — never commit your real key
+.env
+.env.*
+!.env.example
+
+# User data — contains real emails, password hashes, chat content
+users.json
+chat_history.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+price_data.csv
+# Logs
+*.log

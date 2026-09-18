@@ -1,0 +1,11 @@
+Flask
+flask-cors
+gunicorn
+boto3
+pandas
+numpy
+python-dotenv
+groq
+Werkzeug
+google-auth
+requests
