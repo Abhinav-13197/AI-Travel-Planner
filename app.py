@@ -80,7 +80,7 @@ HOTEL_CSV = os.path.join(BASE_DIR, "hotels_dataset.csv")
 TRAVEL_CSV = os.path.join(BASE_DIR, "travel_data.csv")
 FLIGHT_CSV = os.path.join(BASE_DIR, "Clean_Dataset.csv")
 TRAIN_SCHEDULE_CSV = os.path.join(BASE_DIR, "schedules.csv")
-TRAIN_FARE_CSV = os.path.join(BASE_DIR, "price_data.csv")
+TRAIN_FARE_CSV = os.path.join(BASE_DIR, "price_data.csv.gz")
 
 USERS_FILE = os.path.join(BASE_DIR, "users.json")
 CHAT_HISTORY_FILE = os.path.join(BASE_DIR, "chat_history.json")
